@@ -2,9 +2,37 @@ from PyQt6.QtWidgets import (
     QWidget, QLabel, QLineEdit, QPushButton,
     QVBoxLayout, QHBoxLayout, QFrame, QGraphicsDropShadowEffect
 )
-from PyQt6.QtGui import QPixmap, QIcon, QGuiApplication, QColor
-from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPixmap, QIcon, QGuiApplication, QColor, QPainter, QPen
+from PyQt6.QtCore import Qt, QPointF
 from view.popup import Popup, popup_success_login
+
+def make_eye_icon(visible: bool) -> QIcon:
+
+    size = 22
+    px = QPixmap(size, size)
+    px.fill(Qt.GlobalColor.transparent)
+
+    painter = QPainter(px)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+    pen = QPen(QColor("#888888"))
+    pen.setWidth(2)
+    painter.setPen(pen)
+
+    cx, cy = size / 2, size / 2
+
+    painter.drawArc(3, int(cy - 6), size - 6, 12, 0, 180 * 16)
+    painter.drawArc(3, int(cy - 6), size - 6, 12, 180 * 16, 180 * 16)
+
+    painter.setBrush(QColor("#888888"))
+    painter.drawEllipse(QPointF(cx, cy), 3, 3)
+
+    if not visible:
+        painter.drawLine(4, size - 4, size - 4, 4)
+
+    painter.end()
+
+    return QIcon(px)
 
 class RegisterView(QWidget):
 
@@ -66,8 +94,9 @@ class RegisterView(QWidget):
         title.setObjectName("title")
         title.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         title.setStyleSheet("background-color: transparent;")
+        title.setMinimumHeight(50)
 
-        subtitle = QLabel("Register Akun Online Shop E-Commerce")
+        subtitle = QLabel("Silahkan Daftar Akun Online Shop E-Commerce")
         subtitle.setObjectName("subtitle")
         subtitle.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         subtitle.setStyleSheet("background-color: transparent;")
@@ -85,6 +114,17 @@ class RegisterView(QWidget):
         self.input_password.setPlaceholderText("Password")
         self.input_password.setEchoMode(QLineEdit.EchoMode.Password)
         self.input_password.setObjectName("input")
+
+        self.password_visible = False
+
+        self.toggle_password_action = self.input_password.addAction(
+            make_eye_icon(False),
+            QLineEdit.ActionPosition.TrailingPosition
+        )
+
+        self.toggle_password_action.triggered.connect(
+            self.toggle_password_visibility
+        )
 
         self.input_confirm = QLineEdit()
         self.input_confirm.setPlaceholderText("Konfirmasi Password")
@@ -123,6 +163,16 @@ class RegisterView(QWidget):
 
         # APPLY STYLE
         self.setStyleSheet(self.load_styles())
+
+    def toggle_password_visibility(self):
+        self.password_visible = not self.password_visible
+
+        if self.password_visible:
+            self.input_password.setEchoMode(QLineEdit.EchoMode.Normal)
+            self.toggle_password_action.setIcon(make_eye_icon(True))
+        else:
+            self.input_password.setEchoMode(QLineEdit.EchoMode.Password)
+            self.toggle_password_action.setIcon(make_eye_icon(False))
 
     def load_styles(self):
         return """
@@ -192,13 +242,7 @@ class RegisterView(QWidget):
 
         try:
             self.register_controller.create_user(username, password, email)
-            
-            # Callback untuk pindah ke login setelah klik tombol
-            def go_to_login():
-                self.open_login()
-
             popup_success_login(self, "Registrasi berhasil", callback=self.open_login)
-
 
         except Exception as e:
             Popup(self, "Peringatan", str(e))

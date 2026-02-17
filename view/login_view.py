@@ -2,10 +2,38 @@ from PyQt6.QtWidgets import (
     QWidget, QLabel, QLineEdit, QPushButton,
     QVBoxLayout, QHBoxLayout, QFrame, QGraphicsDropShadowEffect
 )
-from PyQt6.QtGui import QPixmap, QIcon, QGuiApplication, QColor
-from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPixmap, QIcon, QGuiApplication, QColor, QPainter, QPen
+from PyQt6.QtCore import Qt, QPointF
+from PyQt6.QtWidgets import QApplication
 from view.popup import Popup
 
+def make_eye_icon(visible: bool) -> QIcon:
+
+    size = 22
+    px = QPixmap(size, size)
+    px.fill(Qt.GlobalColor.transparent)
+
+    painter = QPainter(px)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+
+    pen = QPen(QColor("#888888"))
+    pen.setWidth(2)
+    painter.setPen(pen)
+
+    cx, cy = size / 2, size / 2
+
+    painter.drawArc(3, int(cy - 6), size - 6, 12, 0, 180 * 16)
+    painter.drawArc(3, int(cy - 6), size - 6, 12, 180 * 16, 180 * 16)
+
+    painter.setBrush(QColor("#888888"))
+    painter.drawEllipse(QPointF(cx, cy), 3, 3)
+
+    if not visible:
+        painter.drawLine(4, size - 4, size - 4, 4)
+
+    painter.end()
+
+    return QIcon(px)
 
 class LoginView(QWidget):
 
@@ -73,7 +101,7 @@ class LoginView(QWidget):
         subtitle.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         subtitle.setStyleSheet("background-color: transparent;")
 
-        # INPUT
+        # INPUT USERNAME
         self.input_username = QLineEdit()
         self.input_username.setPlaceholderText("Username")
         self.input_username.setObjectName("input")
@@ -82,6 +110,16 @@ class LoginView(QWidget):
         self.input_password.setPlaceholderText("Password")
         self.input_password.setEchoMode(QLineEdit.EchoMode.Password)
         self.input_password.setObjectName("input")
+
+        self.password_visible = False
+        self.toggle_password_action = self.input_password.addAction(
+            make_eye_icon(False),
+            QLineEdit.ActionPosition.TrailingPosition
+        )
+
+        self.toggle_password_action.triggered.connect(
+            self.toggle_password_visibility
+        )
 
         # BUTTONS
         self.btn_login = QPushButton("Login")
@@ -102,17 +140,25 @@ class LoginView(QWidget):
         form_layout.addWidget(self.btn_login)
         form_layout.addWidget(self.btn_register)
 
-        # ADD TO CARD
         card_layout.addWidget(image_label)
         card_layout.addLayout(form_layout)
         card.setLayout(card_layout)
 
-        # ADD CARD TO MAIN LAYOUT
         main_layout.addWidget(card)
         self.setLayout(main_layout)
 
-        # APPLY STYLE
         self.setStyleSheet(self.load_styles())
+
+    def toggle_password_visibility(self):
+
+        self.password_visible = not self.password_visible
+
+        if self.password_visible:
+            self.input_password.setEchoMode(QLineEdit.EchoMode.Normal)
+            self.toggle_password_action.setIcon(make_eye_icon(True))
+        else:
+            self.input_password.setEchoMode(QLineEdit.EchoMode.Password)
+            self.toggle_password_action.setIcon(make_eye_icon(False))
 
     def load_styles(self):
         return """
@@ -168,9 +214,27 @@ class LoginView(QWidget):
     def handle_login(self):
         username = self.input_username.text()
         password = self.input_password.text()
+
+        if not username.strip() or not password.strip():
+            Popup(self, "Peringatan", "Username dan Password wajib diisi")
+            return
+
         try:
             user = self.login_controller.login_user(username, password)
+
             Popup(self, "Pemberitahuan", "Login berhasil")
+
+            if user["is_admin"]:
+                from view.admin_view import AdminView
+                self.admin_window = AdminView()
+                self.admin_window.show()
+            else:
+                from view.customer import CustomerView
+                self.customer_window = CustomerView(user)
+                self.customer_window.show()
+
+            self.close()
+
         except Exception as e:
             Popup(self, "Peringatan", str(e))
 
@@ -179,4 +243,3 @@ class LoginView(QWidget):
         self.register_window = RegisterView(self.register_controller, self.login_controller)
         self.register_window.show()
         self.close()
-

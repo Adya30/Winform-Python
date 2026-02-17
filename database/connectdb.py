@@ -16,11 +16,11 @@ def get_connection():
         print("Koneksi gagal:", e)
         return None
 
-if __name__ == "__main__":
-    conn = get_connection()
+# if __name__ == "__main__":
+#     conn = get_connection()
 
-    if conn:
-        print("Koneksi sukses!")
-        conn.close()
-    else:
-        print("Koneksi gagal!")
+#     if conn:
+#         print("Koneksi sukses!")
+#         conn.close()
+#     else:
+#         print("Koneksi gagal!")

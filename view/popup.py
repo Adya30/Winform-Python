@@ -30,12 +30,8 @@ class Popup(QWidget):
 
         card = QWidget()
         color = "#29C871" if success else "#E04444" 
-        card.setStyleSheet(f"""
-            background-color: {color};
-            border-radius: 10px;
-        """)
+        card.setStyleSheet(f"background-color: {color}; border-radius: 10px;")
 
-        # shadow
         shadow = QGraphicsDropShadowEffect()
         shadow.setBlurRadius(20)
         shadow.setXOffset(0)
@@ -68,7 +64,6 @@ def popup_success_login(parent, message, callback=None):
     popup.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     popup.setFixedSize(300, 150)
 
-    # center
     geo = parent.geometry()
     popup.move(geo.x() + (geo.width() - popup.width()) // 2,
                geo.y() + (geo.height() - popup.height()) // 2)
@@ -90,7 +85,7 @@ def popup_success_login(parent, message, callback=None):
 
     title = QLabel("Pemberitahuan")
     title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-    title.setStyleSheet("font-weight:bold; font-size:16px; color:white;")
+    title.setStyleSheet("font-size:16px; color:white;")
     card_layout.addWidget(title)
 
     msg = QLabel(message)
@@ -104,7 +99,9 @@ def popup_success_login(parent, message, callback=None):
         QPushButton {
             background-color: white; color:#29C871; border-radius:5px; font-weight:bold; padding:5px;
         }
-        QPushButton:hover { background-color:#e6ffe6; }
+        QPushButton:hover { 
+            background-color:#e6ffe6; 
+        }
     """)
     def on_click():
         if callback:
