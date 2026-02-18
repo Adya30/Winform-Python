@@ -16,7 +16,9 @@ ALTER COLUMN password TYPE VARCHAR(255);
 
 
 INSERT INTO users (username, password, email, is_admin)
-VALUES ('admin', 'admin123', '-', TRUE);
+VALUES ('admin', '$2b$12$u6MzAlSNN5yJxXwL/Hb2yux8z.EN3AJ1fltmT8HrMJ4I5qPJsVfMS', '-', TRUE);
+
+
 
 
 DROP TABLE "users";

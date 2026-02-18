@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGraphicsDropShadowEffect, QPushButton
+from PyQt6.QtWidgets import QWidget, QLabel, QVBoxLayout, QGraphicsDropShadowEffect, QPushButton, QHBoxLayout
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QColor
 
@@ -74,7 +74,6 @@ def popup_success_login(parent, message, callback=None):
     card = QWidget()
     card.setStyleSheet("background-color: #29C871; border-radius: 10px;")
     shadow = QGraphicsDropShadowEffect()
-    shadow.setBlurRadius(20)
     shadow.setXOffset(0)
     shadow.setYOffset(5)
     shadow.setColor(QColor(0,0,0,120))
@@ -109,6 +108,84 @@ def popup_success_login(parent, message, callback=None):
         popup.close()
     btn.clicked.connect(on_click)
     card_layout.addWidget(btn)
+
+    card.setLayout(card_layout)
+    layout.addWidget(card)
+    popup.setLayout(layout)
+    popup.show()
+
+def popup_confirm_logout(parent, message="Apakah Anda yakin ingin logout?", callback=None):
+    popup = QWidget(parent)
+    popup.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Dialog)
+    popup.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+    popup.setFixedSize(300, 150)
+
+    # Posisi popup di tengah parent
+    geo = parent.geometry()
+    popup.move(geo.x() + (geo.width() - popup.width()) // 2,
+               geo.y() + (geo.height() - popup.height()) // 2)
+
+    layout = QVBoxLayout()
+    layout.setContentsMargins(0, 0, 0, 0)
+
+    card = QWidget()
+    card.setStyleSheet("background-color: #FF4B4B; border-radius: 10px;")
+    shadow = QGraphicsDropShadowEffect()
+    shadow.setXOffset(0)
+    shadow.setYOffset(5)
+    shadow.setColor(QColor(0, 0, 0, 120))
+    card.setGraphicsEffect(shadow)
+
+    card_layout = QVBoxLayout()
+    card_layout.setContentsMargins(20, 20, 20, 20)
+
+    title = QLabel("Konfirmasi Logout")
+    title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    title.setStyleSheet("font-size:16px; color:white; font-weight:bold;")
+    card_layout.addWidget(title)
+
+    msg = QLabel(message)
+    msg.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    msg.setStyleSheet("font-size:14px; color:white;")
+    msg.setWordWrap(True)
+    card_layout.addWidget(msg)
+
+    # Tombol Ya dan Tidak
+    btn_yes = QPushButton("Ya")
+    btn_no = QPushButton("Tidak")
+
+    btn_yes.setStyleSheet("""
+        QPushButton {
+            background-color: white; color:#FF4B4B; border-radius:5px; font-weight:bold; padding:5px;
+        }
+        QPushButton:hover {
+            background-color:#ffe6e6;
+        }
+    """)
+    btn_no.setStyleSheet("""
+        QPushButton {
+            background-color: white; color:gray; border-radius:5px; font-weight:bold; padding:5px;
+        }
+        QPushButton:hover {
+            background-color:#f0f0f0;
+        }
+    """)
+
+    def on_yes():
+        if callback:
+            callback()
+        popup.close()
+
+    def on_no():
+        popup.close()
+
+    btn_yes.clicked.connect(on_yes)
+    btn_no.clicked.connect(on_no)
+
+    btn_layout = QHBoxLayout()
+    btn_layout.addWidget(btn_yes)
+    btn_layout.addWidget(btn_no)
+    card_layout.addLayout(btn_layout)
 
     card.setLayout(card_layout)
     layout.addWidget(card)

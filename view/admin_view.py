@@ -1,221 +1,142 @@
 from PyQt6.QtWidgets import (
-    QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout,
-    QFrame, QSizePolicy, QGridLayout
+    QWidget, QPushButton, QLabel,
+    QVBoxLayout, QHBoxLayout, QFrame
 )
-from PyQt6.QtGui import QIcon, QFont, QColor
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QGraphicsDropShadowEffect
-
-class DashboardCard(QFrame):
-    def __init__(self, title, value, subtitle):
-        super().__init__()
-
-        self.setObjectName("card")
-        self.setFixedSize(250, 140)
-
-        shadow = QGraphicsDropShadowEffect()
-        shadow.setBlurRadius(20)
-        shadow.setYOffset(3)
-        shadow.setColor(QColor(0, 0, 0, 60))
-        self.setGraphicsEffect(shadow)
-
-        layout = QVBoxLayout()
-
-        title_label = QLabel(title)
-        title_label.setObjectName("card_title")
-
-        value_label = QLabel(value)
-        value_label.setObjectName("card_value")
-
-        subtitle_label = QLabel(subtitle)
-        subtitle_label.setObjectName("card_subtitle")
-
-        layout.addWidget(title_label)
-        layout.addWidget(value_label)
-        layout.addWidget(subtitle_label)
-
-        self.setLayout(layout)
-
+from PyQt6.QtGui import QFont, QPixmap
+from view.popup import popup_confirm_logout
+from view.login_view import LoginView
 
 class AdminView(QWidget):
 
     def __init__(self):
         super().__init__()
-
         self.setWindowTitle("Admin Dashboard")
-        self.resize(1200, 700)
-
+        self.showMaximized()
         self.init_ui()
-        self.setStyleSheet(self.load_styles())
 
     def init_ui(self):
 
-        main_layout = QHBoxLayout()
+        # VERTICAL LAYOUT
+        main_layout = QVBoxLayout()
         main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.setSpacing(0)
 
-        sidebar = self.create_sidebar()
-        content = self.create_content()
+        header = QFrame()
+        header.setFixedHeight(100)
+        header.setStyleSheet("background-color: #2F3C8F;")
 
-        main_layout.addWidget(sidebar)
-        main_layout.addWidget(content)
+        header_layout = QHBoxLayout()
+        header_layout.setContentsMargins(40, 0, 50, 0)
 
+        logo = QLabel()
+        pixmap = QPixmap("assets/header.png") 
+
+        logo.setPixmap(pixmap)
+        logo.setScaledContents(True)
+        logo.setFixedHeight(80)   
+        logo.setFixedWidth(150)
+        logo.setContentsMargins(35, 5, 0, 0)
+
+        self.btn_tambah = QPushButton("Tambah Produk")
+
+        header_layout.addWidget(logo)
+        header_layout.addStretch()
+        header_layout.addWidget(self.btn_tambah)
+
+        header.setLayout(header_layout)
+
+        # BODY
+        body_layout = QHBoxLayout()
+        body_layout.setContentsMargins(0, 0, 0, 0)
+        body_layout.setSpacing(0)
+
+        # SIDEBAR
+        sidebar = QFrame()
+        sidebar.setFixedWidth(260)
+        sidebar.setStyleSheet("background-color: #2F3C8F;")
+
+        sidebar_layout = QVBoxLayout()
+        sidebar_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        sidebar_layout.setSpacing(25)
+        sidebar_layout.setContentsMargins(20, 60, 20, 20)
+
+        menu_style = """
+            QPushButton {
+                background-color: white;
+                color: #2F3C8F;
+                border-radius: 20px;
+                padding: 10px;
+                font-size: 16px;
+                font-weight: bold;
+                border: none;
+            }
+            QPushButton:hover {
+                background-color: #e6e6e6;
+            }
+        """
+
+        self.btn_produk = QPushButton("Produk")
+        self.btn_pesanan = QPushButton("Pesanan")
+        self.btn_riwayat = QPushButton("Riwayat")
+        self.btn_profil = QPushButton("Profil")
+
+        for btn in [
+            self.btn_tambah,
+            self.btn_produk,
+            self.btn_pesanan,
+            self.btn_riwayat,
+            self.btn_profil
+        ]:
+            btn.setStyleSheet(menu_style)
+            btn.setFixedHeight(45)
+
+        sidebar_layout.addWidget(self.btn_produk)
+        sidebar_layout.addWidget(self.btn_pesanan)
+        sidebar_layout.addWidget(self.btn_riwayat)
+        sidebar_layout.addWidget(self.btn_profil)
+        sidebar_layout.addStretch()
+
+        self.btn_logout = QPushButton("Logout")
+        self.btn_logout.setFixedHeight(45)
+        self.btn_logout.setStyleSheet("""
+            QPushButton {
+                background-color: #FF4B4B;
+                color: white;
+                border-radius: 22px;
+                font-size: 16px;
+                font-weight: bold;
+                border: none;
+            }
+            QPushButton:hover {
+                background-color: #e03d3d;
+            }
+        """)
+        sidebar_layout.addWidget(self.btn_logout)
+        sidebar.setLayout(sidebar_layout)
+
+        # Hubungkan tombol ke method baru
+        self.btn_logout.clicked.connect(self.logout)
+
+        # CONTENT
+        content = QFrame()
+        content.setStyleSheet("background-color: #F4F6FB;")
+
+        body_layout.addWidget(sidebar)
+        body_layout.addWidget(content)
+
+        main_layout.addWidget(header)
+        main_layout.addLayout(body_layout)
         self.setLayout(main_layout)
 
-    # SIDEBAR
-    def create_sidebar(self):
-
-        sidebar = QFrame()
-        sidebar.setObjectName("sidebar")
-        sidebar.setFixedWidth(250)
-
-        layout = QVBoxLayout()
-
-        # LOGO
-        logo = QLabel("Tanamin")
-        logo.setObjectName("logo")
-
-        role = QLabel("Admin")
-        role.setObjectName("role")
-
-        layout.addWidget(logo)
-        layout.addWidget(role)
-
-        layout.addSpacing(30)
-
-        # MENU BUTTONS
-        layout.addWidget(self.menu_button("Katalog Produk"))
-        layout.addWidget(self.menu_button("Data Pesanan"))
-        layout.addWidget(self.menu_button("Riwayat Transaksi"))
-        layout.addWidget(self.menu_button("Feedback"))
-        layout.addWidget(self.menu_button("Pengaturan Akun"))
-
-        layout.addStretch()
-
-        sidebar.setLayout(layout)
-
-        return sidebar
-
-    def menu_button(self, text):
-        btn = QPushButton(text)
-        btn.setObjectName("menu_button")
-        btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        return btn
-
-    # CONTENT AREA
-    def create_content(self):
-
-        content = QFrame()
-        content.setObjectName("content")
-
-        layout = QVBoxLayout()
-
-        # CARDS
-        card_layout = QHBoxLayout()
-
-        card_layout.addWidget(
-            DashboardCard("Total Produk", "156", "12% dari bulan lalu")
+    def logout(self):
+        popup_confirm_logout(
+            parent=self,
+            message="Apakah Anda yakin ingin logout?",
+            callback=self.goto_login
         )
 
-        card_layout.addWidget(
-            DashboardCard("Total Stok", "8,420", "5% dari bulan lalu")
-        )
-
-        card_layout.addWidget(
-            DashboardCard("Total Produk", "156", "18% dari bulan lalu")
-        )
-
-        card_layout.addWidget(
-            DashboardCard("Pendapatan Bulan Ini", "Rp 125.5 Juta", "25% dari bulan lalu")
-        )
-
-        layout.addLayout(card_layout)
-
-        layout.addSpacing(20)
-
-        # PANEL BAWAH
-        bottom_layout = QHBoxLayout()
-
-        big_panel = QFrame()
-        big_panel.setObjectName("panel")
-        big_panel.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-
-        small_panel = QFrame()
-        small_panel.setObjectName("panel")
-        small_panel.setFixedWidth(300)
-
-        bottom_layout.addWidget(big_panel)
-        bottom_layout.addWidget(small_panel)
-
-        layout.addLayout(bottom_layout)
-
-        content.setLayout(layout)
-
-        return content
-
-    def load_styles(self):
-        return """
-
-        QWidget {
-            font-family: Poppins;
-            background-color: #d8cbb7;
-        }
-
-        QFrame#sidebar {
-            background-color: #f0f0f0;
-            padding: 20px;
-        }
-
-        QLabel#logo {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        QLabel#role {
-            font-size: 14px;
-            color: gray;
-        }
-
-        QPushButton#menu_button {
-            background-color: #3fa847;
-            color: white;
-            padding: 12px;
-            border-radius: 8px;
-            text-align: left;
-            font-size: 14px;
-        }
-
-        QPushButton#menu_button:hover {
-            background-color: #2e7d32;
-        }
-
-        QFrame#content {
-            padding: 20px;
-        }
-
-        QFrame#card {
-            background-color: white;
-            border-radius: 12px;
-            padding: 15px;
-        }
-
-        QLabel#card_title {
-            font-size: 14px;
-            color: gray;
-        }
-
-        QLabel#card_value {
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        QLabel#card_subtitle {
-            font-size: 12px;
-            color: green;
-        }
-
-        QFrame#panel {
-            background-color: white;
-            border-radius: 12px;
-        }
-
-        """
+    def goto_login(self):
+        self.login_window = LoginView(None, None)
+        self.login_window.show()
+        self.close()
