@@ -52,7 +52,7 @@ class AdminView(QWidget):
             font-weight: bold;
             color: white;
         """)
-
+        
         title_header.setContentsMargins(70, 0, 0, 0)
 
         self.btn_tambah = QPushButton("Tambah Produk")

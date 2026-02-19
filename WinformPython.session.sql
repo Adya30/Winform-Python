@@ -8,7 +8,11 @@ CREATE TABLE users (
 
 CREATE TABLE produk (
     id_produk SERIAL PRIMARY KEY,
-    nama_produk VARCHAR(150) NOT NULL
+    nama_produk VARCHAR(150) NOT NULL,
+    foto_produk 
+    jumlah_produk
+    harga_produk
+    
 );
 
 ALTER TABLE users
@@ -16,10 +20,7 @@ ALTER COLUMN password TYPE VARCHAR(255);
 
 
 INSERT INTO users (username, password, email, is_admin)
-VALUES ('admin', '$2b$12$u6MzAlSNN5yJxXwL/Hb2yux8z.EN3AJ1fltmT8HrMJ4I5qPJsVfMS', '-', TRUE);
-
-
-
+VALUES ('admin', '$2b$12$u6MzAlSNN5yJxXwL/Hb2yux8z.EN3AJ1fltmT8HrMJ4I5qPJsVfMS', '-', TRUE); -- password:admin123
 
 DROP TABLE "users";
 

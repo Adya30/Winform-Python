@@ -43,7 +43,15 @@ class RegisterView(QWidget):
         self.login_controller = login_controller
 
         self.setWindowTitle("Register")
-        self.resize(900, 500)
+        
+        self.setWindowFlags(
+            Qt.WindowType.Window |
+            Qt.WindowType.WindowCloseButtonHint |
+            Qt.WindowType.WindowMinimizeButtonHint
+        )
+
+        self.setFixedSize(900, 500)
+
         self.setWindowIcon(QIcon("assets/icon.png"))
 
         self.center_window()

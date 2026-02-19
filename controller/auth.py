@@ -88,7 +88,6 @@ class LoginController:
 
         return user
 
-
     def get_user(self, id_user):
 
         user = self.user_model.get_user_by_id(id_user)

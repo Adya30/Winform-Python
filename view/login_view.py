@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout, QHBoxLayout, QFrame, QGraphicsDropShadowEffect
 )
 from PyQt6.QtGui import QPixmap, QIcon, QGuiApplication, QColor, QPainter, QPen
-from PyQt6.QtCore import Qt, QPointF
+from PyQt6.QtCore import Qt, QPointF, QTimer
 from PyQt6.QtWidgets import QApplication
 from view.popup import Popup
 
@@ -44,7 +44,15 @@ class LoginView(QWidget):
         self.register_controller = register_controller
 
         self.setWindowTitle("Login")
-        self.resize(900, 500)
+
+        self.setWindowFlags(
+            Qt.WindowType.Window |
+            Qt.WindowType.WindowCloseButtonHint |
+            Qt.WindowType.WindowMinimizeButtonHint
+        )
+
+        self.setFixedSize(900, 500)
+
         self.setWindowIcon(QIcon("assets/icon.png"))
 
         self.center_window()
@@ -211,6 +219,22 @@ class LoginView(QWidget):
         }
         """
 
+    def open_dashboard(self, user):
+        if user["is_admin"]:
+            from view.admin_view import AdminView
+            self.admin_window = AdminView(
+                self.login_controller,
+                self.register_controller
+            )
+            self.admin_window.show()
+        else:
+            from view.customer_view import CustomerView
+            self.customer_window = CustomerView(user)
+            self.customer_window.show()
+
+        self.close()
+
+
     def handle_login(self):
         username = self.input_username.text()
         password = self.input_password.text()
@@ -218,22 +242,12 @@ class LoginView(QWidget):
         if not username.strip() or not password.strip():
             Popup(self, "Peringatan", "Username dan Password wajib diisi")
             return
-
         try:
             user = self.login_controller.login_user(username, password)
 
             Popup(self, "Pemberitahuan", "Login berhasil")
 
-            if user["is_admin"]:
-                from view.admin_view import AdminView
-                self.admin_window = AdminView()
-                self.admin_window.show()
-            else:
-                from view.customer import CustomerView
-                self.customer_window = CustomerView(user)
-                self.customer_window.show()
-
-            self.close()
+            QTimer.singleShot(900, lambda: self.open_dashboard(user))
 
         except Exception as e:
             Popup(self, "Peringatan", str(e))
